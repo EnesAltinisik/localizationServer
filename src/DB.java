@@ -21,6 +21,56 @@ public class DB {
 
 	}
 
+	public boolean gucForKoordinant(int x, int y, int columnNum, int guc, int oda, int yon) {
+		Statement stmt = null;
+		try {
+
+			stmt = c.createStatement();
+			String sql = "UPDATE yon" + yon + "oda" + oda + " set " + "rout" + columnNum + " = " + guc + " where x=" + x
+					+ " and y=" + y + ";";
+			stmt.executeUpdate(sql);
+
+			stmt.close();
+			c.commit();
+			// c.close();
+			System.out.println("Records created successfully");
+		} catch (Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			try {
+				stmt.close();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			return false;
+		}
+		return true;
+	}
+
+	public void delete(int maxOdaNum) {
+		Statement stmt;
+		try {
+			stmt = c.createStatement();
+			for (int i = 1; i < 1 + maxOdaNum; i++) {
+				for (int j = 1; j < 5; j++) {
+					try {
+						stmt.execute("delete from yon" + j + "oda" + i);
+					} catch (Exception e) {
+						// TODO: handle exception
+					}
+				}
+			}
+			stmt.execute("delete from router_mac");
+
+			c.commit();
+
+			stmt.close();
+			c.close();
+		} catch (SQLException e1) {
+		}
+
+	}
+
 	public int column_num_from_mac(String mac, int yon, int oda) {
 		Statement stmt = null;
 		int column = 0;
@@ -39,7 +89,6 @@ public class DB {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		
 
 		return column;
 	}
@@ -54,8 +103,9 @@ public class DB {
 			stmt.executeUpdate(sql);
 
 			stmt.close();
-			// c.commit();
+			c.commit();
 			// c.close();
+			System.out.println("Records created successfully");
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			try {
@@ -66,7 +116,6 @@ public class DB {
 			}
 			return -1;
 		}
-		System.out.println("Records created successfully");
 		return 0;
 	}
 
@@ -83,23 +132,23 @@ public class DB {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		
+
 		return rs;
 	}
 
-	public Statement kordinat_bilgisi(int oda,int yon) {
+	public Statement kordinat_bilgisi(int oda, int yon) {
 		Statement stmt = null;
 		ResultSet rs = null;
 		try {
 			stmt = c.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM yon" + yon +"oda"+oda+";");
-			//stmt.close();
+			rs = stmt.executeQuery("SELECT * FROM yon" + yon + "oda" + oda + ";");
+			// stmt.close();
 			// c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		
+
 		return stmt;
 	}
 
@@ -125,7 +174,7 @@ public class DB {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		
+
 	}
 
 	public void execute(String sql) {
@@ -136,7 +185,7 @@ public class DB {
 			c.commit();
 
 			stmt.close();
-			// c.close();
+			c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -181,22 +230,21 @@ public class DB {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		
+
 	}
 
-	public ArrayList<arrayYerine>  mac_bilgi(String mac){
+	public ArrayList<arrayYerine> mac_bilgi(String mac) {
 		Statement stmt = null;
 		ArrayList<arrayYerine> ret = new ArrayList<>();
-		int column,yon,oda;
+		int column, yon, oda;
 		try {
 
 			stmt = c.createStatement();
-			ResultSet rs = stmt
-					.executeQuery("SELECT column_num,yon,oda FROM router_mac WHERE mac ='" + mac + "';");
+			ResultSet rs = stmt.executeQuery("SELECT column_num,yon,oda FROM router_mac WHERE mac ='" + mac + "';");
 			while (rs.next()) {
-				column=(rs.getInt("column_num"));
-				yon=(rs.getInt("yon"));
-				oda=(rs.getInt("oda"));
+				column = (rs.getInt("column_num"));
+				yon = (rs.getInt("yon"));
+				oda = (rs.getInt("oda"));
 				ret.add(new arrayYerine(yon, oda, mac, column));
 			}
 			rs.close();
@@ -206,20 +254,18 @@ public class DB {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
-		
-		
 
 		return ret;
 	}
+
 	public int maxRoom() {
-		int i=0;
+		int i = 0;
 		try {
 
 			Statement stmt = c.createStatement();
-			ResultSet rs = stmt
-					.executeQuery("select max(oda) from router_mac;");
+			ResultSet rs = stmt.executeQuery("select max(oda) from router_mac;");
 			rs.next();
-			i= rs.getInt(1);
+			i = rs.getInt(1);
 			rs.close();
 			stmt.close();
 			// c.close();
@@ -228,7 +274,7 @@ public class DB {
 			System.exit(0);
 		}
 		return i;
-		
+
 	}
 	/*
 	 * public void delete_db(String data, String yon_oda, double x, double y) {
@@ -239,6 +285,6 @@ public class DB {
 	 * 
 	 * stmt.close(); // c.close(); } catch (Exception e) {
 	 * System.err.println(e.getClass().getName() + ": " + e.getMessage());
-	 * System.exit(0); }  }
+	 * System.exit(0); } }
 	 */
 }

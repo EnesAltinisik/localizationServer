@@ -7,6 +7,7 @@ public class server {
 	static DB db = new DB();
 	public static void main(String[] args) throws IOException {
 		ServerSocket serverSocket = null;
+		//db.delete(1);
 		while (1 == 1) {
 			start(serverSocket);
 			testCount++;
