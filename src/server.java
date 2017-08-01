@@ -3,15 +3,13 @@ import java.net.*;
 import java.io.*;
 
 public class server {
-	private static int testCount;
+	
 	static DB db = new DB();
 	public static void main(String[] args) throws IOException {
 		ServerSocket serverSocket = null;
-		//db.delete(1);
+		////db.delete(2);
 		while (1 == 1) {
 			start(serverSocket);
-			testCount++;
-			System.out.println("created server");
 		}
 
 	}
@@ -36,7 +34,6 @@ public class server {
 		BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		String inputLine;
 		while ((inputLine = in.readLine()) != null) {
-			System.out.println(inputLine);
 			out.println(Islem.isle(inputLine));
 		}
 		out.close();

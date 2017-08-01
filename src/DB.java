@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DB {
 	Connection c;
@@ -21,18 +22,19 @@ public class DB {
 
 	}
 
-	public boolean gucForKoordinant(int x, int y, int columnNum, int guc, int oda, int yon) {
+	public boolean gucForKoordinant(int x, int y, int columnNum, int guc, int oda, int yon, int time) {
 		Statement stmt = null;
+		int ret = 0;
 		try {
 
 			stmt = c.createStatement();
-			String sql = "UPDATE yon" + yon + "oda" + oda + " set " + "rout" + columnNum + " = " + guc + " where x=" + x
-					+ " and y=" + y + ";";
-			stmt.executeUpdate(sql);
+			String sql = "UPDATE yon" + yon + "oda" + oda + " set " + "rout" + columnNum + " = " + guc + " ,time= "
+					+ time + " where x=" + x + " and y=" + y + ";";
+			ret = stmt.executeUpdate(sql);
 
 			stmt.close();
 			c.commit();
-			// c.close();
+			// //c.close();
 			System.out.println("Records created successfully");
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -44,7 +46,7 @@ public class DB {
 			}
 			return false;
 		}
-		return true;
+		return ret != 0;
 	}
 
 	public void delete(int maxOdaNum) {
@@ -65,7 +67,7 @@ public class DB {
 			c.commit();
 
 			stmt.close();
-			c.close();
+			// c.close();
 		} catch (SQLException e1) {
 		}
 
@@ -84,7 +86,7 @@ public class DB {
 			}
 			rs.close();
 			stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -93,18 +95,18 @@ public class DB {
 		return column;
 	}
 
-	public int insert_db(String yon_oda, double guc, String router_num, double x, double y) {
+	public int insert_db(String yon_oda, double guc, String router_num, double x, double y, int time) {
 		Statement stmt = null;
 		try {
 
 			stmt = c.createStatement();
-			String sql = "INSERT INTO " + yon_oda + " (" + router_num + ",x,y) " + "VALUES (" + guc + ", " + x + ", "
-					+ y + " );";
+			String sql = "INSERT INTO " + yon_oda + " (" + router_num + ",x,y,time) " + "VALUES (" + guc + ", " + x
+					+ ", " + y + ", " + time + " );";
 			stmt.executeUpdate(sql);
 
 			stmt.close();
 			c.commit();
-			// c.close();
+			// //c.close();
 			System.out.println("Records created successfully");
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -119,6 +121,57 @@ public class DB {
 		return 0;
 	}
 
+	public HashMap<String, Integer> macColumn(int oda, int yon) {
+		HashMap<String, Integer> map = new HashMap<>();
+		try {
+
+			Statement stmt = c.createStatement();
+			String sql = "select column_num, mac from router_mac where yon=" + yon + " and oda=" + oda + ";";
+			ResultSet rs = stmt.executeQuery(sql);
+
+			while (rs.next()) {
+				map.put(rs.getString("mac"), rs.getInt("column_num"));
+			}
+			c.commit();
+
+			stmt.close();
+			// //c.close();
+		} catch (Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+		return map;
+
+	}
+
+	public HashMap<Integer, Integer> macColumn(int oda, int yon, int x, int y) {
+		HashMap<Integer, Integer> map = new HashMap<>();
+		try {
+
+			Statement stmt = c.createStatement();
+			String sql = "select  * from yon" + yon + "oda" + oda + " where x=" + x + " and y=" + y + ";";
+			ResultSet rs = stmt.executeQuery(sql);
+
+			rs.next();
+			map.put(1, rs.getInt("rout1"));
+			map.put(2, rs.getInt("rout2"));
+			map.put(3, rs.getInt("rout3"));
+			map.put(4, rs.getInt("rout4"));
+			map.put(5, rs.getInt("rout5"));
+			map.put(6, rs.getInt("rout6"));
+
+			c.commit();
+
+			stmt.close();
+			// //c.close();
+		} catch (Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+		return map;
+
+	}
+
 	public ResultSet yon_oda_bilgisi(String yon_oda) {
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -127,13 +180,32 @@ public class DB {
 			stmt = c.createStatement();
 			rs = stmt.executeQuery("SELECT * FROM " + yon_oda + ";");
 			stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
 
 		return rs;
+	}
+
+	public void update_coordinant(HashMap<Integer, Integer> map, int x, int y, String update_edilecek_yon_oda) {
+		Statement stmt = null;
+		try {
+			stmt = c.createStatement();
+			String sql = "UPDATE " + update_edilecek_yon_oda + " set rout1=" + map.get(1) + ", rout2=" + map.get(2)
+					+ ", rout3=" + map.get(3) + ", rout4=" + map.get(4) + ", rout5=" + map.get(5) 
+					+ ", rout6=" + map.get(6) +", time="+(int) (System.currentTimeMillis() / 60000)+ " where x=" + x + " and y=" + y+";";
+			stmt.executeUpdate(sql);
+			c.commit();
+
+			stmt.close();
+			// //c.close();
+		} catch (Exception e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			System.exit(0);
+		}
+
 	}
 
 	public Statement kordinat_bilgisi(int oda, int yon) {
@@ -143,7 +215,7 @@ public class DB {
 			stmt = c.createStatement();
 			rs = stmt.executeQuery("SELECT * FROM yon" + yon + "oda" + oda + ";");
 			// stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -155,8 +227,9 @@ public class DB {
 	public void creatTable(int oda, int yon) {
 		String sql = "CREATE TABLE public.yon" + yon + "oda" + oda
 				+ " (x double precision,y double precision,rout1 double precision, " + " rout2 double precision, "
-				+ "rout3 double precision, " + "rout4 double precision) " + " WITH (OIDS=FALSE); "
-				+ "ALTER TABLE public.yon" + yon + "oda" + oda + " OWNER TO postgres;";
+				+ "rout3 double precision, "
+				+ "rout4 double precision, rout5 double precision, rout6 double precision, time integer) "
+				+ " WITH (OIDS=FALSE); " + "ALTER TABLE public.yon" + yon + "oda" + oda + " OWNER TO postgres;";
 		execute(sql);
 	}
 
@@ -169,14 +242,14 @@ public class DB {
 			c.commit();
 
 			stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
 
 	}
-
+	
 	public void execute(String sql) {
 		try {
 
@@ -185,7 +258,7 @@ public class DB {
 			c.commit();
 
 			stmt.close();
-			c.close();
+			//// c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -206,7 +279,7 @@ public class DB {
 			c.commit();
 
 			stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -225,7 +298,7 @@ public class DB {
 			c.commit();
 
 			stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -249,7 +322,7 @@ public class DB {
 			}
 			rs.close();
 			stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -268,7 +341,7 @@ public class DB {
 			i = rs.getInt(1);
 			rs.close();
 			stmt.close();
-			// c.close();
+			// //c.close();
 		} catch (Exception e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
@@ -283,8 +356,9 @@ public class DB {
 	 * stmt = c.createStatement(); String sql =
 	 * "DELETE from yon_oda where ...;"; stmt.executeUpdate(sql); c.commit();
 	 * 
-	 * stmt.close(); // c.close(); } catch (Exception e) {
+	 * stmt.close(); // //c.close(); } catch (Exception e) {
 	 * System.err.println(e.getClass().getName() + ": " + e.getMessage());
 	 * System.exit(0); } }
 	 */
+
 }
